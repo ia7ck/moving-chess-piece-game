@@ -1,7 +1,7 @@
 module Main exposing (main)
 
 import Browser
-import Html exposing (Html, div, input, label, span, text)
+import Html exposing (Html, div, input, label, span, text, p)
 import Html.Attributes exposing (checked, class, type_)
 import Html.Events exposing (onClick)
 import List.Extra
@@ -323,7 +323,7 @@ radio value msg_ checked_ =
 
 status : Bool -> Turn -> Position -> Html Msg
 status finished turn pos =
-    div []
+    p []
         [ text
             (if finished then
                 if turn == User then

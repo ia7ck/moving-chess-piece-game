@@ -3,8 +3,12 @@
 }
 
 body {
+  font-family: system-ui, -apple-system, "Hiragino Sans", "Yu Gothic UI", "Segoe UI", "Meiryo", sans-serif;
   width: 500px;
   box-sizing: border-box;
+  margin-top: 20px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .row {
@@ -22,12 +26,6 @@ body {
 
 .bg-color {
   background-color: #afaffa;
-}
-
-.hidden {
-  /* text-indent: 100%; */
-  /* white-space: nowrap; */
-  /* overflow: hidden; */
 }
 
 .bg-light {
