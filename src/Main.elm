@@ -226,10 +226,56 @@ nimMove pos =
         Just (Position (min pos.i pos.j) (min pos.i pos.j))
 
 
-wythoffMove : Position -> Maybe Position
-wythoffMove _ =
-    Just (Position 0 0)
+alpha : Float
+alpha =
+    (1 + sqrt 5) / 2
 
+
+wythoffMove : Position -> Maybe Position
+wythoffMove pos =
+    let
+        i =
+            max pos.i pos.j
+
+        j =
+            min pos.i pos.j
+
+
+        q =
+            floor (toFloat (i - j) * alpha)
+
+        p =
+            floor (toFloat j / 2 * alpha)
+
+        nxt =
+            if i == j then
+                Just (Position 0 0)
+
+            else if q == j then
+                List.Extra.last (List.Extra.cycle 68 (nextPositions pos Wythoff))
+
+            else if q < j then
+                Just (Position (i - (j - q)) (j - (j - q)))
+
+            else if toFloat (p + 1) * alpha < toFloat j + 1 then
+                Just (Position (p + 1 + j) j)
+
+            else
+                Just (Position p j)
+    in
+        if pos.i < pos.j then
+            swap nxt
+        else
+            nxt
+
+swap: Maybe Position -> Maybe Position
+swap position =
+    case position of
+        Nothing ->
+            position
+        Just pos ->
+            Just (Position pos.j pos.i)
+    
 
 
 -- SUBSCRIPTIONS
