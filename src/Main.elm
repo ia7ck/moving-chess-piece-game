@@ -266,7 +266,7 @@ wythoffMove pos =
                 Just (Position 0 0)
 
             else if q == j then
-                List.Extra.last (List.Extra.cycle 68 (nextPositions pos Wythoff))
+                List.Extra.last (List.Extra.cycle 68 (nextPositions (Position i j) Wythoff))
 
             else if q < j then
                 Just (Position (i - (j - q)) (j - (j - q)))
