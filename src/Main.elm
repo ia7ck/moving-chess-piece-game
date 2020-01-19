@@ -327,7 +327,7 @@ view model =
 
 radio : String -> msg -> Bool -> Html msg
 radio value msg_ checked_ =
-    label []
+    label [ class "text-large" ]
         [ input
             [ type_ "radio"
             , onClick msg_
@@ -340,7 +340,7 @@ radio value msg_ checked_ =
 
 status : Bool -> Turn -> Position -> Maybe Position -> Html Msg
 status finished turn pos dest =
-    p []
+    p [ class "text-center text-large" ]
         [ text
             (if finished then
                 if turn == User then

@@ -39,3 +39,11 @@ body {
 .pointer:hover {
   background-color: #afaffa;
 }
+
+.text-center {
+  text-align: center;
+}
+
+.text-large {
+  font-size: 20px;
+}
