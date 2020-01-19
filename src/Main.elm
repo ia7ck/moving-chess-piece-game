@@ -3,7 +3,7 @@ module Main exposing (main)
 import Browser
 import Html exposing (Html, div, input, label, p, span, text)
 import Html.Attributes exposing (checked, class, type_)
-import Html.Events exposing (onClick)
+import Html.Events exposing (onClick, onMouseOut, onMouseOver)
 import List.Extra
 import Process
 import Random
@@ -56,6 +56,7 @@ type Cell
 
 type alias Model =
     { position : Position
+    , destination : Maybe Position
     , game : Game
     , board : List (List Cell)
     , turn : Turn
@@ -65,7 +66,7 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model (Position 0 0) Nim initBoard Cpu False
+    ( Model (Position 0 0) Nothing Nim initBoard Cpu False
     , Random.generate SetInitialPosition positionGenerator
     )
 
@@ -96,6 +97,7 @@ type Msg
     = SetInitialPosition Position
     | SetPositionByUser Position
     | SetPositionByCpu
+    | SetDestination (Maybe Position)
     | SetGame Game
 
 
@@ -128,6 +130,14 @@ update msg model =
                     Just pos ->
                         ( updateModel pos User model, Cmd.none )
 
+        SetDestination destination ->
+            case destination of
+                Nothing ->
+                    ( { model | destination = Nothing }, Cmd.none )
+
+                Just dest ->
+                    ( { model | destination = Just dest }, Cmd.none )
+
         SetGame game_ ->
             ( { model
                 | game = game_
@@ -141,6 +151,7 @@ updateModel : Position -> Turn -> Model -> Model
 updateModel pos nextTurn model =
     { model
         | position = pos
+        , destination = Nothing
         , board = updateBoard pos nextTurn model.game
         , finished = List.isEmpty (nextPositions pos model.game)
         , turn = nextTurn
@@ -309,7 +320,7 @@ view model =
                 (SetGame Wythoff)
                 (model.game == Wythoff)
             ]
-        , status model.finished model.turn model.position
+        , status model.finished model.turn model.position model.destination
         , board model.board
         ]
 
@@ -327,8 +338,8 @@ radio value msg_ checked_ =
         ]
 
 
-status : Bool -> Turn -> Position -> Html Msg
-status finished turn pos =
+status : Bool -> Turn -> Position -> Maybe Position -> Html Msg
+status finished turn pos dest =
     p []
         [ text
             (if finished then
@@ -339,9 +350,24 @@ status finished turn pos =
                     "You Win!"
 
              else
-                "(" ++ String.fromInt pos.i ++ ", " ++ String.fromInt pos.j ++ ")"
+                positionStatus pos dest
             )
         ]
+
+
+positionStatus : Position -> Maybe Position -> String
+positionStatus pos destination =
+    case destination of
+        Nothing ->
+            positionToString pos
+
+        Just dest ->
+            positionToString pos ++ " → " ++ positionToString dest
+
+
+positionToString : Position -> String
+positionToString pos =
+    "(" ++ String.fromInt pos.i ++ ", " ++ String.fromInt pos.j ++ ")"
 
 
 board : List (List Cell) -> Html Msg
@@ -363,7 +389,11 @@ cell c =
                     [ class "bg-color" ]
 
                 UserNext pos ->
-                    [ class "bg-light", onClick (SetPositionByUser pos) ]
+                    [ class "bg-light pointer"
+                    , onClick (SetPositionByUser pos)
+                    , onMouseOver (SetDestination (Just pos))
+                    , onMouseOut (SetDestination Nothing)
+                    ]
 
                 CpuNext _ ->
                     [ class "bg-light" ]

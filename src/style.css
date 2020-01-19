@@ -30,9 +30,12 @@ body {
 
 .bg-light {
   background-color: lavender;
+}
+
+.pointer {
   cursor: pointer;
 }
 
-.bg-light:hover {
+.pointer:hover {
   background-color: #afaffa;
 }
