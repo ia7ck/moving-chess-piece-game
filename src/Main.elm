@@ -1,7 +1,7 @@
 module Main exposing (main)
 
 import Browser
-import Html exposing (Html, div, input, label, span, text, p)
+import Html exposing (Html, div, input, label, p, span, text)
 import Html.Attributes exposing (checked, class, type_)
 import Html.Events exposing (onClick)
 import List.Extra
@@ -116,13 +116,17 @@ update msg model =
             ( newModel, cmd )
 
         SetPositionByCpu ->
-            case bestMove model.position model.game of
-                Nothing ->
-                    -- 起こる?
-                    ( { model | finished = True, turn = Cpu }, Cmd.none )
+            if model.finished then
+                ( model, Cmd.none )
 
-                Just pos ->
-                    ( updateModel pos User model, Cmd.none )
+            else
+                case bestMove model.position model.game of
+                    Nothing ->
+                        -- 起こる?
+                        ( { model | finished = True, turn = Cpu }, Cmd.none )
+
+                    Just pos ->
+                        ( updateModel pos User model, Cmd.none )
 
         SetGame game_ ->
             ( { model
@@ -240,7 +244,6 @@ wythoffMove pos =
         j =
             min pos.i pos.j
 
-
         q =
             floor (toFloat (i - j) * alpha)
 
@@ -263,19 +266,22 @@ wythoffMove pos =
             else
                 Just (Position p j)
     in
-        if pos.i < pos.j then
-            swap nxt
-        else
-            nxt
+    if pos.i < pos.j then
+        swap nxt
 
-swap: Maybe Position -> Maybe Position
+    else
+        nxt
+
+
+swap : Maybe Position -> Maybe Position
 swap position =
     case position of
         Nothing ->
             position
+
         Just pos ->
             Just (Position pos.j pos.i)
-    
+
 
 
 -- SUBSCRIPTIONS
