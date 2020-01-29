@@ -218,7 +218,7 @@ mayaRule pos =
             && ((pos.i == nxt.i && pos.j > nxt.j) || (pos.i > nxt.i && pos.j == nxt.j))
 
 
-nimMove : Position -> Maybe Position
+nimMove : BestMove
 nimMove pos =
     if pos.i == pos.j then
         List.Extra.last (List.Extra.cycle 67 (nextPositions pos nimRule))
@@ -232,7 +232,7 @@ alpha =
     (1 + sqrt 5) / 2
 
 
-wythoffMove : Position -> Maybe Position
+wythoffMove : BestMove
 wythoffMove pos =
     let
         i =
@@ -270,7 +270,7 @@ wythoffMove pos =
         nxt
 
 
-mayaMove : Position -> Maybe Position
+mayaMove : BestMove
 mayaMove pos =
     if Bitwise.xor pos.i pos.j == 1 then
         List.Extra.last (List.Extra.cycle 65 (nextPositions pos mayaRule))
