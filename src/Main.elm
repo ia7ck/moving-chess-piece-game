@@ -1,5 +1,6 @@
 module Main exposing (main)
 
+import Bitwise
 import Browser
 import Html exposing (Html, div, input, label, p, span, text)
 import Html.Attributes exposing (checked, class, type_)
@@ -210,6 +211,13 @@ wythoffRule pos =
             || (pos.i > nxt.i && pos.j == nxt.j)
 
 
+mayaRule : Rule
+mayaRule pos =
+    \nxt ->
+        (nxt.i /= nxt.j)
+            && ((pos.i == nxt.i && pos.j > nxt.j) || (pos.i > nxt.i && pos.j == nxt.j))
+
+
 nimMove : Position -> Maybe Position
 nimMove pos =
     if pos.i == pos.j then
@@ -262,6 +270,33 @@ wythoffMove pos =
         nxt
 
 
+mayaMove : Position -> Maybe Position
+mayaMove pos =
+    if Bitwise.xor pos.i pos.j == 1 then
+        List.Extra.last (List.Extra.cycle 65 (nextPositions pos mayaRule))
+
+    else
+        let
+            i =
+                max pos.i pos.j
+
+            j =
+                min pos.i pos.j
+
+            nxt =
+                if Bitwise.xor (j + 1) j == 1 then
+                    Just (Position (j + 1) j)
+
+                else
+                    Just (Position (j - 1) j)
+        in
+        if pos.i < pos.j then
+            swap nxt
+
+        else
+            nxt
+
+
 swap : Maybe Position -> Maybe Position
 swap position =
     case position of
@@ -297,6 +332,10 @@ view model =
                 "Queen"
                 (SetGame (Game "Wythoff" wythoffRule wythoffMove))
                 (model.game.name == "Wythoff")
+            , radio
+                "???"
+                (SetGame (Game "Maya" mayaRule mayaMove))
+                (model.game.name == "Maya")
             ]
         , status model.finished model.turn model.position model.destination
         , board model.board
