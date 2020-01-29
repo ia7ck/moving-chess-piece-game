@@ -108,14 +108,9 @@ update msg model =
             ( updateModel pos User model, Cmd.none )
 
         SetPositionByUser pos ->
-            let
-                newModel =
-                    updateModel pos Cpu model
-
-                cmd =
-                    Task.perform (\_ -> SetPositionByCpu) (Process.sleep 1000)
-            in
-            ( newModel, cmd )
+            ( updateModel pos Cpu model
+            , Task.perform (\_ -> SetPositionByCpu) (Process.sleep 1000)
+            )
 
         SetPositionByCpu ->
             if model.finished then
