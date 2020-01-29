@@ -78,15 +78,20 @@ positionGenerator =
         (Random.int 0 19)
 
 
-initBoard : List (List Cell)
-initBoard =
+positionListList : List (List Position)
+positionListList =
     List.map
         (\i ->
             List.map
-                (\j -> Other (Position i j))
+                (\j -> Position i j)
                 (List.range 0 19)
         )
         (List.range 0 19)
+
+
+initBoard : List (List Cell)
+initBoard =
+    List.map (\r -> List.map (\c -> Other c) r) positionListList
 
 
 
@@ -156,38 +161,29 @@ updateModel pos nextTurn model =
 updateBoard : Position -> Turn -> Game -> List (List Cell)
 updateBoard pos turn game =
     List.map
-        (\i ->
+        (\row ->
             List.map
-                (\j ->
-                    let
-                        p =
-                            Position i j
-                    in
-                    if pos == p then
-                        Current p
+                (\cell ->
+                    if pos == cell then
+                        Current cell
 
                     else if
                         List.member
-                            p
+                            cell
                             (nextPositions pos game)
                     then
                         if turn == User then
-                            UserNext p
+                            UserNext cell
 
                         else
-                            CpuNext p
+                            CpuNext cell
 
                     else
-                        Other p
+                        Other cell
                 )
-                (List.range 0 19)
+                row
         )
-        (List.range 0 19)
-
-
-to2D : Int -> Position
-to2D i =
-    Position (i // 20) (modBy 20 i)
+        positionListList
 
 
 nextPositions : Position -> Game -> List Position
@@ -201,7 +197,7 @@ nextPositions pos game =
                 Wythoff ->
                     wythoffRule
     in
-    List.filter (rule pos) (List.map to2D (List.range 0 399))
+    List.filter (rule pos) (List.concat positionListList)
 
 
 nimRule : Rule
@@ -367,16 +363,16 @@ positionToString pos =
 
 board : List (List Cell) -> Html Msg
 board cells =
-    div [] (List.map (\r -> row r) cells)
+    div [] (List.map (\r -> rowHtml r) cells)
 
 
-row : List Cell -> Html Msg
-row r =
-    div [] (List.map (\c -> cell c) r)
+rowHtml : List Cell -> Html Msg
+rowHtml r =
+    div [] (List.map (\c -> cellHtml c) r)
 
 
-cell : Cell -> Html Msg
-cell c =
+cellHtml : Cell -> Html Msg
+cellHtml c =
     let
         attrs =
             case c of
