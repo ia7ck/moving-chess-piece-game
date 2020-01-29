@@ -37,9 +37,15 @@ type alias Rule =
     Position -> (Position -> Bool)
 
 
-type Game
-    = Nim
-    | Wythoff
+type alias BestMove =
+    Position -> Maybe Position
+
+
+type alias Game =
+    { name : String
+    , rule : Rule
+    , bestMove : BestMove
+    }
 
 
 type Turn
@@ -66,7 +72,7 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model (Position 0 0) Nothing Nim initBoard Cpu False
+    ( Model (Position 0 0) Nothing (Game "Nim" nimRule nimMove) initBoard Cpu False
     , Random.generate SetInitialPosition positionGenerator
     )
 
@@ -122,7 +128,7 @@ update msg model =
                 ( model, Cmd.none )
 
             else
-                case bestMove model.position model.game of
+                case model.game.bestMove model.position of
                     Nothing ->
                         -- 起こる?
                         ( { model | finished = True, turn = Cpu }, Cmd.none )
@@ -153,7 +159,7 @@ updateModel pos nextTurn model =
         | position = pos
         , destination = Nothing
         , board = updateBoard pos nextTurn model.game
-        , finished = List.isEmpty (nextPositions pos model.game)
+        , finished = List.isEmpty (nextPositions pos model.game.rule)
         , turn = nextTurn
     }
 
@@ -170,7 +176,7 @@ updateBoard pos turn game =
                     else if
                         List.member
                             cell
-                            (nextPositions pos game)
+                            (nextPositions pos game.rule)
                     then
                         if turn == User then
                             UserNext cell
@@ -186,17 +192,8 @@ updateBoard pos turn game =
         positionListList
 
 
-nextPositions : Position -> Game -> List Position
-nextPositions pos game =
-    let
-        rule =
-            case game of
-                Nim ->
-                    nimRule
-
-                Wythoff ->
-                    wythoffRule
-    in
+nextPositions : Position -> Rule -> List Position
+nextPositions pos rule =
     List.filter (rule pos) (List.concat positionListList)
 
 
@@ -213,20 +210,10 @@ wythoffRule pos =
             || (pos.i > nxt.i && pos.j == nxt.j)
 
 
-bestMove : Position -> Game -> Maybe Position
-bestMove pos game =
-    case game of
-        Nim ->
-            nimMove pos
-
-        Wythoff ->
-            wythoffMove pos
-
-
 nimMove : Position -> Maybe Position
 nimMove pos =
     if pos.i == pos.j then
-        List.Extra.last (List.Extra.cycle 67 (nextPositions pos Nim))
+        List.Extra.last (List.Extra.cycle 67 (nextPositions pos nimRule))
 
     else
         Just (Position (min pos.i pos.j) (min pos.i pos.j))
@@ -257,7 +244,7 @@ wythoffMove pos =
                 Just (Position 0 0)
 
             else if q == j then
-                List.Extra.last (List.Extra.cycle 68 (nextPositions (Position i j) Wythoff))
+                List.Extra.last (List.Extra.cycle 68 (nextPositions (Position i j) wythoffRule))
 
             else if q < j then
                 Just (Position (i - (j - q)) (j - (j - q)))
@@ -304,12 +291,12 @@ view model =
         [ div []
             [ radio
                 "Rook"
-                (SetGame Nim)
-                (model.game == Nim)
+                (SetGame (Game "Nim" nimRule nimMove))
+                (model.game.name == "Nim")
             , radio
                 "Queen"
-                (SetGame Wythoff)
-                (model.game == Wythoff)
+                (SetGame (Game "Wythoff" wythoffRule wythoffMove))
+                (model.game.name == "Wythoff")
             ]
         , status model.finished model.turn model.position model.destination
         , board model.board
